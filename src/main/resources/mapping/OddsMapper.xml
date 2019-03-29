@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.shenchen.odds.dao.IOddsDao" >
+
+  <insert id="insertOdds" parameterType="com.shenchen.odds.model.BigOdds" >
+        INSERT INTO `bigodds` (
+                    `league_name_simply`,
+                    `host_name`,
+                    `guest_name`,
+                    `match_time`,
+                    `host_goal`,
+                    `guest_goal`,
+                    `game_result`,
+                    `bet365_first_win`,
+                    `bet365_first_same`,
+                    `bet365_first_lost`,
+                    `bet365_win`,
+                    `bet365_same`,
+                    `bet365_lost`,
+                    `wd_first_win`,
+                    `wd_first_same`,
+                    `wd_first_lost`,
+                    `wd_win`,
+                    `wd_same`,
+                    `wd_lost`,
+                    `buy_win_money`,
+                    `buy_same_money`,
+                    `buy_lost_money`,
+                    `buy_result`)
+        VALUES(
+            #{league_name_simply,jdbcType=VARCHAR},
+            #{host_name,jdbcType=VARCHAR},
+            #{guest_name,jdbcType=VARCHAR},
+            #{match_time,jdbcType=TIMESTAMP},
+            #{host_goal,jdbcType=INTEGER},
+            #{guest_goal,jdbcType=INTEGER},
+            #{game_result,jdbcType=INTEGER},
+            #{bet365_first_win,jdbcType=DECIMAL},
+            #{bet365_first_same,jdbcType=DECIMAL},
+            #{bet365_first_lost,jdbcType=DECIMAL},
+            #{bet365_win,jdbcType=DECIMAL},
+            #{bet365_same,jdbcType=DECIMAL},
+            #{bet365_lost,jdbcType=DECIMAL},
+            #{wd_first_win,jdbcType=DECIMAL},
+            #{wd_first_same,jdbcType=DECIMAL},
+            #{wd_first_lost,jdbcType=DECIMAL},
+            #{wd_win,jdbcType=DECIMAL},
+            #{wd_same,jdbcType=DECIMAL},
+            #{wd_lost,jdbcType=DECIMAL},
+            #{buy_win_money,jdbcType=DECIMAL},
+            #{buy_same_money,jdbcType=DECIMAL},
+            #{buy_lost_money,jdbcType=DECIMAL},
+            #{buy_result,jdbcType=DECIMAL})
+        </insert>
+
+
+    <insert id="insertOddsKelly" parameterType="com.shenchen.odds.model.BigOddsKelly" >
+        INSERT INTO `big_odds_kelly` (
+                    `match_id`,
+                    `league_name_simply`,
+                    `host_name`,
+                    `guest_name`,
+                    `match_time`,
+                    `host_goal`,
+                    `guest_goal`,
+                    `game_result`,
+                    `company_name`,
+                    `first_win`,
+                    `first_same`,
+                    `first_lost`,
+                    `win`,
+                    `same`,
+                    `lost`,
+                    `win_bet_rate`,
+                    `same_bet_rate`,
+                    `lost_bet_rate`,
+                    `win_kelly`,
+                    `same_kelly`,
+                    `lost_kelly`,
+                    `pay_back_percent`,
+                    `buy_win_money`,
+                    `buy_same_money`,
+                    `buy_lost_money`,
+                    `buy_result`
+                    )
+        VALUES(
+            #{match_id,jdbcType=INTEGER},
+            #{league_name_simply,jdbcType=VARCHAR},
+            #{host_name,jdbcType=VARCHAR},
+            #{guest_name,jdbcType=VARCHAR},
+            #{match_time,jdbcType=TIMESTAMP},
+            #{host_goal,jdbcType=INTEGER},
+            #{guest_goal,jdbcType=INTEGER},
+            #{game_result,jdbcType=INTEGER},
+			#{company_name,jdbcType=VARCHAR},
+            #{first_win,jdbcType=DECIMAL},
+            #{first_same,jdbcType=DECIMAL},
+            #{first_lost,jdbcType=DECIMAL},
+            #{win,jdbcType=DECIMAL},
+            #{same,jdbcType=DECIMAL},
+            #{lost,jdbcType=DECIMAL},
+            #{win_bet_rate,jdbcType=DECIMAL},
+            #{same_bet_rate,jdbcType=DECIMAL},
+            #{lost_bet_rate,jdbcType=DECIMAL},
+            #{win_kelly,jdbcType=DECIMAL},
+            #{same_kelly,jdbcType=DECIMAL},
+            #{lost_kelly,jdbcType=DECIMAL},
+			#{pay_back_percent,jdbcType=DECIMAL},
+            #{buy_win_money,jdbcType=DECIMAL},
+            #{buy_same_money,jdbcType=DECIMAL},
+            #{buy_lost_money,jdbcType=DECIMAL},
+            #{buy_result,jdbcType=DECIMAL})
+        </insert>
+
+    <select id="listAll"  resultType="com.shenchen.odds.model.BigOddsKelly">
+        SELECT *
+        FROM big_odds_kelly_xijia
+
+    </select>
+
+
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.shenchen.odds.model.BigOddsKelly">
+        UPDATE big_odds_kelly_xijia
+        <set>
+
+            <if test="buy_win_money != null" >buy_win_money = #{buy_win_money,jdbcType=DECIMAL},</if>
+            <if test="buy_same_money != null" >buy_same_money = #{buy_same_money,jdbcType=DECIMAL},</if>
+            <if test="buy_lost_money != null" >buy_lost_money = #{buy_lost_money,jdbcType=DECIMAL},</if>
+            <if test="buy_result != null" >buy_result = #{buy_result,jdbcType=DECIMAL},</if>
+
+
+        </set>
+        WHERE bigodds_id = #{bigodds_id,jdbcType=VARCHAR}
+    </update>
+
+
+    <insert id="insertOddsyz" parameterType="com.shenchen.odds.model.BigOddsYz" >
+        INSERT INTO `big_odds_yz` (
+                    `match_id`,
+                    `league_name_simply`,
+                    `host_name`,
+                    `guest_name`,
+                    `match_time`,
+                    `host_goal`,
+                    `guest_goal`,
+                    `game_result`,
+                    `company_name`,
+                    `first_let_ball`,
+                    `first_host_bet`,
+                    `first_guest_bet`,
+                    `let_ball`,
+                    `host_bet`,
+                    `guest_bet`)
+        VALUES(
+            #{match_id,jdbcType=VARCHAR},
+            #{league_name_simply,jdbcType=VARCHAR},
+            #{host_name,jdbcType=VARCHAR},
+            #{guest_name,jdbcType=VARCHAR},
+            #{match_time,jdbcType=TIMESTAMP},
+            #{host_goal,jdbcType=INTEGER},
+            #{guest_goal,jdbcType=INTEGER},
+            #{game_result,jdbcType=INTEGER},
+            #{company_name,jdbcType=VARCHAR},
+            #{first_let_ball,jdbcType=DECIMAL},
+            #{first_host_bet,jdbcType=DECIMAL},
+            #{first_guest_bet,jdbcType=DECIMAL},
+            #{let_ball,jdbcType=DECIMAL},
+            #{host_bet,jdbcType=DECIMAL},
+            #{guest_bet,jdbcType=DECIMAL})
+        </insert>
+
+
+
+
+    <select id="listYZAll" resultType="com.shenchen.odds.model.BigOddsYz">
+         SELECT *
+        FROM big_odds_yz
+
+    </select>
+
+
+    <update id="updateYz" parameterType="com.shenchen.odds.model.BigOddsYz">
+        UPDATE big_odds_yz
+        <set>
+
+            <if test="buy_host != null" >buy_host = #{buy_host,jdbcType=DECIMAL},</if>
+            <if test="buy_guest != null" >buy_guest = #{buy_guest,jdbcType=DECIMAL},</if>
+        </set>
+        WHERE big_odds_yz_id = #{big_odds_yz_id,jdbcType=VARCHAR}
+    </update>
+
+
+    <!--让盘 升盘 主胜 赔率-->
+    <select id="rang_sheng_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball < let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+    <!--让盘 降盘 主胜 赔率-->
+    <select id="rang_jiang_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball > let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+    <!--让盘 不变盘 主胜 赔率-->
+    <select id="rang_bubian_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+         AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball = let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+
+
+
+    <!--让盘 升盘 客胜 赔率-->
+    <select id="rang_sheng_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball < let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+    <!--让盘 降盘 客胜 赔率-->
+    <select id="rang_jiang_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball > let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+    <!--让盘 不变盘 客胜 赔率-->
+    <select id="rang_bubian_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball <= 0
+--         AND let_ball <= 0
+        AND first_let_ball = let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--受让盘 升盘 主胜 赔率-->
+    <select id="shou_sheng_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball < let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+    <!--受让盘 降盘 主胜 赔率-->
+    <select id="shou_jiang_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball > let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+    <!--受让盘 不变盘 主胜 赔率-->
+    <select id="shou_bubian_zhu" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball = let_ball
+        ]]>
+        <![CDATA[
+        AND ( host_bet - first_host_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( host_bet - first_host_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+
+
+
+    <!--受让盘 升盘 客胜 赔率-->
+    <select id="shou_sheng_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball < let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+    <!--受让盘 降盘 客胜 赔率-->
+    <select id="shou_jiang_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball > let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+    <!--受让盘 不变盘 客胜 赔率-->
+    <select id="shou_bubian_ke" parameterType = "com.shenchen.odds.model.YzJiSuan" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        big_odds_yz
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        <![CDATA[
+        AND first_let_ball > 0
+        AND let_ball > 0
+        AND first_let_ball = let_ball
+        ]]>
+        <![CDATA[
+        AND ( guest_bet - first_guest_bet ) > #{start_change_bet,jdbcType=DECIMAL}
+        AND ( guest_bet - first_guest_bet ) < #{end_change_bet,jdbcType=DECIMAL}
+        ]]>
+        <if test="resultType != null and resultType == 1" >
+            AND buy_host > 1
+        </if>
+        <if test="resultType != null and resultType == 2" >
+            AND buy_guest > 1
+        </if>
+        group by league_name_simply
+    </select>
+
+
+
+    <insert id="insertOddsyzModel" parameterType="com.shenchen.odds.model.BigOddsYzModel" >
+        INSERT INTO `big_odds_yz_model` (
+                    `league_name_simply`,
+                    `let_type`,
+                    `let_change_type`,
+                    `bet_change_type`,
+                    `bet_change_start`,
+                    `bet_change_end`,
+                    `host_win`,
+                    `guest_win`,
+                    `host_win_rate`,
+                    `guest_win_rate`)
+        VALUES(
+            #{league_name_simply,jdbcType=VARCHAR},
+            #{let_type,jdbcType=VARCHAR},
+            #{let_change_type,jdbcType=VARCHAR},
+            #{bet_change_type,jdbcType=VARCHAR},
+            #{bet_change_start,jdbcType=DECIMAL},
+            #{bet_change_end,jdbcType=DECIMAL},
+            #{host_win,jdbcType=INTEGER},
+            #{guest_win,jdbcType=INTEGER},
+            #{host_win_rate,jdbcType=DECIMAL},
+            #{guest_win_rate,jdbcType=DECIMAL})
+        </insert>
+
+
+
+    <!--查找相似模型-->
+    <select id="query_model" parameterType = "com.shenchen.odds.model.BigOddsYzModel" resultType="com.shenchen.odds.model.BigOddsYzModel">
+        SELECT *
+        FROM
+          big_odds_yz_model
+        WHERE
+        league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
+        and let_type = #{let_type,jdbcType=VARCHAR}
+        and let_change_type = #{let_change_type,jdbcType=VARCHAR}
+        and bet_change_type = #{bet_change_type,jdbcType=VARCHAR}
+        and bet_change_end = #{bet_change_end,jdbcType=DECIMAL}
+    </select>
+
+    <delete id="deleteOddsyzNew"  >
+        delete from big_odds_yz_new
+
+        </delete>
+
+
+    <insert id="insertOddsyzNew" parameterType="com.shenchen.odds.model.BigOddsYz" >
+        INSERT INTO `big_odds_yz_new` (
+                    `match_id`,
+                    `league_name_simply`,
+                    `host_name`,
+                    `guest_name`,
+                    `match_time`,
+                    `host_goal`,
+                    `guest_goal`,
+                    `game_result`,
+                    `company_name`,
+                    `first_let_ball`,
+                    `first_host_bet`,
+                    `first_guest_bet`,
+                    `let_ball`,
+                    `host_bet`,
+                    `guest_bet`,
+                    `buy_host`,
+                    `buy_guest`)
+        VALUES(
+            #{match_id,jdbcType=VARCHAR},
+            #{league_name_simply,jdbcType=VARCHAR},
+            #{host_name,jdbcType=VARCHAR},
+            #{guest_name,jdbcType=VARCHAR},
+            #{match_time,jdbcType=TIMESTAMP},
+            #{host_goal,jdbcType=INTEGER},
+            #{guest_goal,jdbcType=INTEGER},
+            #{game_result,jdbcType=INTEGER},
+            #{company_name,jdbcType=VARCHAR},
+            #{first_let_ball,jdbcType=DECIMAL},
+            #{first_host_bet,jdbcType=DECIMAL},
+            #{first_guest_bet,jdbcType=DECIMAL},
+            #{let_ball,jdbcType=DECIMAL},
+            #{host_bet,jdbcType=DECIMAL},
+            #{guest_bet,jdbcType=DECIMAL},
+            #{buy_host,jdbcType=DECIMAL},
+            #{buy_guest,jdbcType=DECIMAL})
+        </insert>
+
+
+    <select id="listYzNewAll" resultType="com.shenchen.odds.model.BigOddsYz">
+         SELECT *
+        FROM big_odds_yz_new
+
+    </select>
+
+</mapper>
