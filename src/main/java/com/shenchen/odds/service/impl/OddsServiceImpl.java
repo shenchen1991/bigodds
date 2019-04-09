@@ -497,6 +497,121 @@ public class OddsServiceImpl implements IOddsService {
 
     }
 
+
+    /**
+     * 从日期获取最新的亚洲赔率
+     * @param inputDateStr
+     */
+    @Override
+    public void insertLastYz(String inputDateStr) {
+        singleThreadExecutor.execute(new Runnable() {
+            public void run() {
+                try {
+                    SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
+                    Calendar c = Calendar.getInstance();
+                    Date startDate = f.parse(inputDateStr);
+                    c.setTime(startDate);
+                    while ( c.getTime().getTime() < new Date().getTime() - 86400000){
+                        Thread.sleep(1000);
+                        String dateStr = f.format(c.getTime());
+                        logger.info("当前日期："+ dateStr);
+                        List<GameBean> list = new ArrayList<GameBean>();
+                        try{
+                            String json =  HttpClient4.doGet("http://odds.zgzcw.com/odds/oyzs_ajax.action?type=qb&issue="+dateStr+"&date=&companys=14");
+                            //转对象
+                            logger.info("获取信息："+json);
+                            list = JSONObject.parseArray(json, GameBean.class);
+                            for ( GameBean gameBean : list ) {
+                                System.out.println(gameBean.toString());
+                                if(!GameCheckUtils.gameCheck(gameBean.getLEAGUE_NAME_SIMPLY())){
+                                    continue;
+                                }
+                                BigOddsYz bigOdds = new BigOddsYz();
+                                bigOdds.setMatch_id(gameBean.getID());
+                                bigOdds.setLeague_name_simply(gameBean.getLEAGUE_NAME_SIMPLY());
+                                bigOdds.setHost_name(gameBean.getHOST_NAME());
+                                bigOdds.setGuest_name(gameBean.getGUEST_NAME());
+                                bigOdds.setHost_goal(gameBean.getHOST_GOAL());
+                                bigOdds.setGuest_goal(gameBean.getGUEST_GOAL());
+                                if(gameBean.getHOST_GOAL() > gameBean.getGUEST_GOAL()){
+                                    bigOdds.setGame_result(1);
+                                }else if (gameBean.getGUEST_GOAL() == gameBean.getHOST_GOAL()){
+                                    bigOdds.setGame_result(2);
+                                }else{
+                                    bigOdds.setGame_result(3);
+                                }
+                                bigOdds.setMatch_time(DateUtils.str2Date("yyyy-MM-dd HH:mm:ss",gameBean.getMATCH_TIME()));
+                                if(!CollectionUtils.isEmpty(gameBean.getListOdds())){
+                                    for(CompanyOdd companyOdd : gameBean.getListOdds()){
+                                        bigOdds.setCompany_name(companyOdd.getCOMPANY_NAME());
+                                        bigOdds.setFirst_let_ball(StringUtils.isBlank(companyOdd.getFIRST_HANDICAP())? null : new BigDecimal(companyOdd.getFIRST_HANDICAP()));
+                                        bigOdds.setFirst_host_bet(StringUtils.isBlank(companyOdd.getFIRST_HOST())? null : new BigDecimal(companyOdd.getFIRST_HOST()));
+                                        bigOdds.setFirst_guest_bet(StringUtils.isBlank(companyOdd.getFIRST_GUEST())? null : new BigDecimal(companyOdd.getFIRST_GUEST()));
+                                        bigOdds.setLet_ball(StringUtils.isBlank(companyOdd.getHANDICAP())? null : new BigDecimal(companyOdd.getHANDICAP()));
+                                        bigOdds.setHost_bet(StringUtils.isBlank(companyOdd.getHOST())? null : new BigDecimal(companyOdd.getHOST()));
+                                        bigOdds.setGuest_bet(StringUtils.isBlank(companyOdd.getGUEST())? null : new BigDecimal(companyOdd.getGUEST()));
+
+
+
+                                        if(bigOdds.getHost_goal() == null
+                                                || bigOdds.getGuest_goal() == null
+                                                || bigOdds.getLet_ball() == null){
+                                            continue;
+
+                                        }
+                                        BigDecimal yzResult = new BigDecimal(bigOdds.getHost_goal())
+                                                .subtract(new BigDecimal(bigOdds.getGuest_goal())).add(bigOdds.getLet_ball());
+
+                                        if(yzResult.doubleValue() > 0.3){
+                                            bigOdds.setBuy_host(new BigDecimal(2));
+                                            bigOdds.setBuy_guest(new BigDecimal(0));
+                                        }else if(yzResult.doubleValue() < 0.3 && yzResult.doubleValue() > 0){
+                                            bigOdds.setBuy_host(new BigDecimal(1.5));
+                                            bigOdds.setBuy_guest(new BigDecimal(0.5));
+                                        }else if(yzResult.doubleValue() == 0){
+                                            bigOdds.setBuy_host(new BigDecimal(1));
+                                            bigOdds.setBuy_guest(new BigDecimal(1));
+                                        }else if(yzResult.doubleValue() < 0&& yzResult.doubleValue() > -0.3){
+                                            bigOdds.setBuy_host(new BigDecimal(0.5));
+                                            bigOdds.setBuy_guest(new BigDecimal(1.5));
+                                        }else if(yzResult.doubleValue() < -0.3 ){
+                                            bigOdds.setBuy_host(new BigDecimal(0));
+                                            bigOdds.setBuy_guest(new BigDecimal(2));
+                                        }
+
+                                        oddsDao.deleteOddsyz(bigOdds.getMatch_id());
+
+                                        oddsDao.insertOddsyz(bigOdds);
+                                    }
+                                }
+
+
+
+                            }
+                            c.add(Calendar.DAY_OF_MONTH, 1);// 今天+1天
+                        }catch (Exception e){
+                            log.error("error",e);
+                        }
+                    }
+
+                } catch (ParseException e) {
+                    logger.error("error",e);
+                } catch (InterruptedException e) {
+                    logger.error("error",e);
+                }
+//                sumYaZhou();
+//                guilv();
+
+
+            }
+        });
+
+
+    }
+
+
+
+
     @Override
     public void sumYaZhou() {
         log.error("111");
@@ -563,39 +678,43 @@ public class OddsServiceImpl implements IOddsService {
                     "法国杯"
             };
 
+            double beginD = -0.50D;
+            double addStep = 0.05D;
+            int time = 20;
+
             for(String str : strings){
                 // 让盘 升盘 主胜
-                rang_sheng_zhu(str);
+                rang_sheng_zhu(str,beginD,addStep,time);
 
                 // 让盘 降盘 主胜
-                rang_jiang_zhu(str);
+                rang_jiang_zhu(str,beginD,addStep,time);
 
                 // 让盘 不变盘 主胜
-                rang_bubian_zhu(str);
+                rang_bubian_zhu(str,beginD,addStep,time);
 
                 // 让盘 升盘 客队
-                rang_sheng_ke(str);
+                rang_sheng_ke(str,beginD,addStep,time);
 
                 // 让盘 降盘 客队
-                rang_jiang_ke(str);
+                rang_jiang_ke(str,beginD,addStep,time);
 
                 // 让盘 不变盘 客队
-                rang_bubian_ke(str);
+                rang_bubian_ke(str,beginD,addStep,time);
 
                 // 受让盘 升盘 主胜
-                shou_sheng_zhu(str);
+                shou_sheng_zhu(str,beginD,addStep,time);
 
                 //受让盘 降盘 主胜
-                shou_jiang_zhu(str);
+                shou_jiang_zhu(str,beginD,addStep,time);
 
                 // 受让盘 不变盘 主胜
-                shou_bubian_zhu(str);
+                shou_bubian_zhu(str,beginD,addStep,time);
                 // 受让盘 升盘 客队
-                shou_sheng_ke(str);
+                shou_sheng_ke(str,beginD,addStep,time);
                 // 受让盘 降盘 客队
-                shou_jiang_ke(str);
+                shou_jiang_ke(str,beginD,addStep,time);
                 // 受让盘 不变盘 客队
-                shou_bubian_ke(str);
+                shou_bubian_ke(str,beginD,addStep,time);
             }
 
 
@@ -604,14 +723,15 @@ public class OddsServiceImpl implements IOddsService {
         }
     }
 
+
     // 让盘 升盘 主胜
-    private void rang_sheng_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_sheng_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_sheng_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_sheng_zhu(yzJiSuan);
@@ -643,18 +763,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|升盘|主队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 让盘 降盘 主胜
-    private void rang_jiang_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_jiang_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_jiang_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_jiang_zhu(yzJiSuan);
@@ -686,18 +806,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|降盘|主胜|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 让盘 不变盘 主胜
-    private void rang_bubian_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_bubian_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_bubian_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_bubian_zhu(yzJiSuan);
@@ -729,18 +849,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|不变盘|主胜|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 让盘 升盘 客队
-    private void rang_sheng_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_sheng_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_sheng_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_sheng_ke(yzJiSuan);
@@ -772,18 +892,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|升盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 让盘 降盘 客队
-    private void rang_jiang_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_jiang_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_jiang_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_jiang_ke(yzJiSuan);
@@ -815,18 +935,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|降盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 让盘 不变盘 客队
-    private void rang_bubian_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void rang_bubian_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.rang_bubian_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.rang_bubian_ke(yzJiSuan);
@@ -858,19 +978,19 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|让盘|不变盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
 
     // 受让盘 升盘 主胜
-    private void shou_sheng_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_sheng_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_sheng_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_sheng_zhu(yzJiSuan);
@@ -902,18 +1022,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|升盘|主胜|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 受让盘 降盘 主胜
-    private void shou_jiang_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_jiang_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_jiang_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_jiang_zhu(yzJiSuan);
@@ -945,18 +1065,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|降盘|主胜|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 受让盘 不变盘 主胜
-    private void shou_bubian_zhu(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_bubian_zhu(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_bubian_zhu(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_bubian_zhu(yzJiSuan);
@@ -988,18 +1108,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|不变盘|主胜|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 受让盘 升盘 客队
-    private void shou_sheng_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_sheng_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_sheng_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_sheng_ke(yzJiSuan);
@@ -1031,18 +1151,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|升盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 受让盘 降盘 客队
-    private void shou_jiang_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_jiang_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_jiang_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_jiang_ke(yzJiSuan);
@@ -1074,18 +1194,18 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|降盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
     // 受让盘 不变盘 客队
-    private void shou_bubian_ke(String name){
-        BigDecimal changeBet = new BigDecimal(-0.3);
-        for (int index  = 0; index < 60 ;index ++){
+    private void shou_bubian_ke(String name,double beginD,double addStep,int time){
+        BigDecimal changeBet = new BigDecimal(beginD);
+        for (int index  = 0; index < time ;index ++){
             YzJiSuan yzJiSuan = new YzJiSuan();
             yzJiSuan.setLeague_name_simply(name);
             yzJiSuan.setStart_change_bet(changeBet);
-            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(0.01)));
+            yzJiSuan.setEnd_change_bet(yzJiSuan.getStart_change_bet().add(new BigDecimal(addStep)));
             Integer totalCount = oddsDao.shou_bubian_ke(yzJiSuan);
             yzJiSuan.setResultType(1);
             Integer hostCount = oddsDao.shou_bubian_ke(yzJiSuan);
@@ -1117,7 +1237,7 @@ public class OddsServiceImpl implements IOddsService {
             bigOddsYzModel.setGuest_win_rate(new BigDecimal(rate2));
             oddsDao.insertOddsyzModel(bigOddsYzModel);
             System.out.println(name+"|受让盘|不变盘|客队|开始变化:"+changeBet.doubleValue()+ "|"+totalCount + "|"+hostCount+ "|"+guestCount+ "|"+rate+ "|"+rate2);
-            changeBet = changeBet.add(new BigDecimal(0.01));
+            changeBet = changeBet.add(new BigDecimal(addStep));
         }
     }
 
@@ -1125,19 +1245,17 @@ public class OddsServiceImpl implements IOddsService {
 
     @Override
     public List<BigOddsYzResult> getLastYz() {
-
-        oddsDao.deleteOddsyzNew();
 //        singleThreadExecutor.execute(new Runnable() {
 ////            public void run() {
                 try {
                 SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
                 Date date = new Date();
-                date = f.parse("2019-03-28");
                 Calendar c = Calendar.getInstance();
                 c.setTime(date);
+                c.add(Calendar.DAY_OF_MONTH, -2);// 今天+1天
 
                 Thread.sleep(1000);
-                while ( c.getTime().getTime() < new Date().getTime()){
+                while ( c.getTime().getTime() < new Date().getTime() + 100000){
                 String dateStr = f.format(c.getTime());
                 logger.info("当前日期："+ dateStr);
                 boolean flag = false;
@@ -1211,6 +1329,8 @@ public class OddsServiceImpl implements IOddsService {
                                 bigOdds.setBuy_host(new BigDecimal(0));
                                 bigOdds.setBuy_guest(new BigDecimal(2));
                             }
+
+                            oddsDao.deleteOddsyzNewById(bigOdds.getMatch_id());
                             oddsDao.insertOddsyzNew(bigOdds);
                         }
                     }
@@ -1227,8 +1347,6 @@ public class OddsServiceImpl implements IOddsService {
                 }
 //            }
 //        });
-
-
         return this.lastYzModel();
 
 
@@ -1267,15 +1385,15 @@ public class OddsServiceImpl implements IOddsService {
             if(!Arrays.asList(strings).contains(bigOddsYz.getLeague_name_simply())){
                 continue;
             }
-            if(bigOddsYz.getMatch_time().getTime() <  (new Date().getTime() - 9000000)){
-                continue;
-            }
+//            if(bigOddsYz.getMatch_time().getTime() <  (new Date().getTime() - 900000)){
+//                continue;
+//            }
 
             BigOddsYzModel bigOddsYzModel = new BigOddsYzModel();
             bigOddsYzModel.setLeague_name_simply(bigOddsYz.getLeague_name_simply());
-            if(bigOddsYz.getLet_ball().doubleValue() <= 0 && bigOddsYz.getFirst_let_ball().doubleValue() <= 0){
+            if(bigOddsYz.getFirst_let_ball().doubleValue() <= 0){
                 bigOddsYzModel.setLet_type("让盘");
-            }else if(bigOddsYz.getLet_ball().doubleValue() > 0 && bigOddsYz.getFirst_let_ball().doubleValue() > 0){
+            }else if(bigOddsYz.getFirst_let_ball().doubleValue() > 0){
                 bigOddsYzModel.setLet_type("受让盘");
             }
             if(bigOddsYz.getFirst_let_ball().doubleValue() > bigOddsYz.getLet_ball().doubleValue()){

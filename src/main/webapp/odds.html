@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="static/element-ui/lib/theme-chalk/index.css"/>
+    <link rel="stylesheet" href="static/font/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="static/css/goods.css"/>
+    <link rel="stylesheet" href="static/css/public.css"/>
+</head>
+<body>
+<div id="app">
+    <!-- header -->
+    <el-menu mode="horizontal" :default-active="activeIndex">
+        <el-menu-item index="0" id="logo">偏门秘籍 最新请求时间：{{createTime}}</el-menu-item>
+    </el-menu>
+    <div id="main">
+        <el-col>
+            <el-card shadow="hover">
+                <!-- 功能按钮 -->
+                <div>
+                    <el-row>
+                        <el-button icon="el-icon-refresh"
+                                   @click="findAll()">刷新
+                        </el-button>
+                    </el-row>
+                </div>
+                <div>
+                    <el-row>
+                        <el-button icon="el-icon-refresh"
+                                   @click="winAdd()">胜利++
+                        </el-button>
+                        {{winCount}}
+                    </el-row>
+
+                </div>
+                <div>
+                    <el-row>
+                        <el-button icon="el-icon-refresh"
+                                   @click="winDec()">胜利--
+                        </el-button>
+                        {{winCount}}
+                    </el-row>
+
+                </div>
+                <div>
+                    <el-row>
+                        <el-button icon="el-icon-refresh"
+                                   @click="lostAdd()">输++
+                        </el-button>
+                        {{lostCount}}
+                    </el-row>
+                </div>
+                <div>
+                    <el-row>
+                        <el-button icon="el-icon-refresh"
+                                   @click="lostDec()">输--
+                        </el-button>
+                        {{lostCount}}
+                    </el-row>
+                </div>
+                <!-- 列表 -->
+                <el-table
+                        ref="odds"
+                        :data="odds"
+                        border
+                        tooltip-effect="dark"
+                        :height="400"
+                        even-bg-color="#f4f4f4"
+                        row-hover-color="#eee"
+                        row-click-color="#edf7ff"
+                        style="width: 100%">
+                    <!--<el-table-column-->
+                            <!--ref="selection"-->
+                            <!--align="center"-->
+                            <!--type="selection"-->
+                            <!--width="55">-->
+                    <!--</el-table-column>-->
+                    <el-table-column
+                            id="league_name_simply"
+                            prop="bigOddsYz.league_name_simply"
+                            align="center"
+                            fixed
+                            label="联赛名称"
+                            width="80">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.host_name"
+                            label="主队"
+                            fixed
+                            width="80">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.guest_name"
+                            label="客队"
+                            fixed
+                            width="80">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.match_time_str"
+                            label="比赛时间"
+                            fixed
+                            width="105">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.first_host_bet"
+                            label="初始主队"
+                            width="58">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.first_let_ball"
+                            label="初始让球"
+                            width="58">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.first_guest_bet"
+                            label="初始客队"
+                            width="58">
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.host_bet"
+                            label="即时主队"
+                            width="80"
+                            style="background-color: red">
+                        <template scope="scope">
+                            <span style="color: red">
+                                {{scope.row.bigOddsYz.host_bet}}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.let_ball"
+                            label="即时让球"
+                            width="80"
+                            style="color: red">
+                        <template scope="scope">
+                            <span style="color: red">
+                                {{scope.row.bigOddsYz.let_ball}}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="bigOddsYz.guest_bet"
+                            label="即时客队"
+                            width="80"
+                            style="color: red">
+                        <template scope="scope">
+                            <span style="color: red">
+                                {{scope.row.bigOddsYz.guest_bet}}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="hostModel.let_type"
+                            label="让盘类型"
+                            width="80"
+                            show-overflow-tooltip>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="hostModel.bet_change_type"
+                            label="主客队"
+                            width="80"
+                            show-overflow-tooltip>
+                        <template scope="scope">
+                            <span>
+                                {{scope.row.hostModel.bet_change_type}}
+                            </span>
+                            <br/>
+                            <span>
+                                {{scope.row.guestModel.bet_change_type}}
+                            </span>
+                        </template>
+
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="hostModel.host_win_rate"
+                            label="主队胜率        客队胜率"
+                            width="200"
+                            show-overflow-tooltip>
+                        <template scope="scope">
+                            <span v-if="scope.row.hostModel.host_win_rate <= 0.5" style="color:#000000">
+                                {{scope.row.hostModel.host_win_rate}}({{scope.row.hostModel.host_win}})</span>
+                            <span v-else style="color: red"> {{scope.row.hostModel.host_win_rate}}({{scope.row.hostModel.host_win}})</span>
+                            <sapn>&nbsp;&nbsp;&nbsp;&nbsp;</sapn>
+                            <span v-if="scope.row.hostModel.guest_win_rate <= 0.5" style="color:#000000">
+                                {{scope.row.hostModel.guest_win_rate}}({{scope.row.hostModel.guest_win}})</span>
+                            <span v-else style="color: red"> {{scope.row.hostModel.guest_win_rate}}({{scope.row.hostModel.guest_win}})</span>
+                            <br/>
+                            <span v-if="scope.row.guestModel.host_win_rate <= 0.5" style="color:#000000">
+                                {{scope.row.guestModel.host_win_rate}}({{scope.row.guestModel.host_win}})</span>
+                            <span v-else style="color: red"> {{scope.row.guestModel.host_win_rate}}({{scope.row.guestModel.host_win}})</span>
+                            <sapn>&nbsp;&nbsp;&nbsp;&nbsp;</sapn>
+                            <span v-if="scope.row.guestModel.guest_win_rate <= 0.5" style="color:#000000">
+                                {{scope.row.guestModel.guest_win_rate}}({{scope.row.guestModel.guest_win}})</span>
+                            <span v-else style="color: red"> {{scope.row.guestModel.guest_win_rate}}({{scope.row.guestModel.guest_win}})</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="hostModel.host_win_rate"
+                            label="赛果"
+                            width="100"
+                            show-overflow-tooltip>
+                        <template scope="scope">
+                            <span v-if="scope.row.bigOddsYz.buy_host > 1" style="color:#000000">主胜</span>
+                            <span v-if="scope.row.bigOddsYz.buy_guest > 1" style="color:#000000">客胜</span>
+                            <span v-if="scope.row.bigOddsYz.buy_guest === 1" style="color:#000000">走水</span>
+                            <span style="color:#000000">({{scope.row.bigOddsYz.buy_host}} {{scope.row.bigOddsYz.buy_guest}})</span>
+                         </template>
+                    </el-table-column>
+                    <el-table-column
+                            align="center"
+                            prop="hostModel.host_win_rate"
+                            label="购买结果"
+                            width="50"
+                            show-overflow-tooltip>
+                        <template scope="scope">
+                            <span v-if="scope.row.bigOddsYz.buy_host > 1
+                                     && scope.row.hostModel.host_win_rate > 0.5
+                                     && scope.row.guestModel.host_win_rate > 0.5"
+                                    style="color:#000000">赢</span>
+                            <span v-if="scope.row.bigOddsYz.buy_host > 1
+                                     && scope.row.hostModel.guest_win_rate > 0.5
+                                     && scope.row.guestModel.guest_win_rate > 0.5"
+                                  style="color:#000000">输</span>
+
+                            <span v-if="scope.row.bigOddsYz.buy_guest > 1
+                                     && scope.row.hostModel.host_win_rate > 0.5
+                                     && scope.row.guestModel.host_win_rate > 0.5"
+                                  style="color:#000000">赢</span>
+                            <span v-if="scope.row.bigOddsYz.buy_guest > 1
+                                     && scope.row.hostModel.guest_win_rate < 0.5
+                                     && scope.row.guestModel.guest_win_rate <= 0.5"
+                                  style="color:#000000">输</span>
+                        </template>
+                    </el-table-column>
+                    <!--<el-table-column-->
+                            <!--align="center"-->
+                            <!--prop="hostModel.guest_win_rate"-->
+                            <!--label="客队胜率(主队)"-->
+                            <!--width="80"-->
+                            <!--show-overflow-tooltip>-->
+                        <!--<template scope="scope">-->
+                            <!--<span v-if="scope.row.hostModel.guest_win_rate < 0.5" style="color:#000000">-->
+                                <!--{{scope.row.hostModel.guest_win_rate}}({{scope.row.hostModel.guest_win}})</span>-->
+                            <!--<span v-else style="color: red"> {{scope.row.hostModel.guest_win_rate}}({{scope.row.hostModel.guest_win}})</span>-->
+                        <!--</template>-->
+                    <!--</el-table-column>-->
+                    <!--<el-table-column-->
+                            <!--align="center"-->
+                            <!--prop="guestModel.bet_change_type"-->
+                            <!--label="主客队"-->
+                            <!--width="66"-->
+                            <!--show-overflow-tooltip>-->
+                    <!--</el-table-column>-->
+                    <!--<el-table-column-->
+                            <!--align="center"-->
+                            <!--prop="guestModel.host_win_rate"-->
+                            <!--label="主队胜率(客队)"-->
+                            <!--width="80"-->
+                            <!--show-overflow-tooltip>-->
+                        <!--<template scope="scope">-->
+                            <!--<span v-if="scope.row.guestModel.host_win_rate < 0.5" style="color:#000000">-->
+                                <!--{{scope.row.guestModel.host_win_rate}}({{scope.row.guestModel.host_win}})</span>-->
+                            <!--<span v-else style="color: red"> {{scope.row.guestModel.host_win_rate}}({{scope.row.guestModel.host_win}})</span>-->
+                        <!--</template>-->
+                    <!--</el-table-column>-->
+                    <!--<el-table-column-->
+                            <!--align="center"-->
+                            <!--prop="guestModel.guest_win_rate"-->
+                            <!--label="客队胜率(客队)"-->
+                            <!--width="80"-->
+                            <!--show-overflow-tooltip>-->
+                        <!--<template scope="scope">-->
+                            <!--<span v-if="scope.row.guestModel.guest_win_rate < 0.5" style="color:#000000">-->
+                                <!--{{scope.row.guestModel.guest_win_rate}}({{scope.row.guestModel.guest_win}})</span>-->
+                            <!--<span v-else style="color: red"> {{scope.row.guestModel.guest_win_rate}}({{scope.row.guestModel.guest_win}})</span>-->
+                        <!--</template>-->
+                    <!--</el-table-column>-->
+                </el-table>
+            </el-card>
+        </el-col>
+    </div>
+
+    <!-- footer -->
+    <div class="footer">
+        <el-container>
+            <el-footer>
+                <el-row :gutter="20">
+                    <el-col :span="8" :offset="10">
+                        <div class="footer-inner">
+                            <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+                                <span class="with-love">
+                                    <i class="fa fa-heartbeat"></i>
+                                </span>
+                                <span class="author" itemprop="copyrightHolder">TyCoding</span>
+                            </div>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-footer>
+        </el-container>
+    </div>
+
+</div>
+</body>
+<script type="text/javascript" src="static/vue/vue.js"></script>
+<script type="text/javascript" src="static/element-ui/lib/index.js"></script>
+<script type="text/javascript" src="static/vue/vue-resource.js"></script>
+<script type="text/javascript" src="static/js/goods.js"></script>
+</html>

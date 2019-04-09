@@ -13,6 +13,8 @@ public interface IOddsService {
 
     void InsertOddsyz(String inputDateStr);
 
+    void insertLastYz(String inputDateStr);
+
     void sumYaZhou();
 
     void  guilv();

@@ -47,16 +47,25 @@ public class OddsController {
     }
 
 
-    @RequestMapping(value="/getLastYz",method=RequestMethod.GET)
+    @RequestMapping(value="/insertLastYz.do",method=RequestMethod.GET)
+    @ResponseBody
+    public String insertLastYz(@RequestParam String inputDateStr){
+         oddsService.insertLastYz(inputDateStr);
+        return "inserting";
+    }
+
+
+
+    @RequestMapping(value="/getLastYz.do",method=RequestMethod.GET)
     @ResponseBody
     public List<BigOddsYzResult> getLastYz(){
         return oddsService.getLastYz();
     }
 
-    @RequestMapping(value="/lastYzModel",method=RequestMethod.GET)
-    @ResponseBody
-    public List<BigOddsYzResult> lastYzModel(){
-        return oddsService.lastYzModel();
-    }
+//    @RequestMapping(value="/lastYzModel",method=RequestMethod.GET)
+//    @ResponseBody
+//    public List<BigOddsYzResult> lastYzModel(){
+//        return oddsService.lastYzModel();
+//    }
 
 }  

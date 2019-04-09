@@ -152,7 +152,9 @@
                     `first_guest_bet`,
                     `let_ball`,
                     `host_bet`,
-                    `guest_bet`)
+                    `guest_bet`,
+                    `buy_host`,
+                    `buy_guest`)
         VALUES(
             #{match_id,jdbcType=VARCHAR},
             #{league_name_simply,jdbcType=VARCHAR},
@@ -168,7 +170,9 @@
             #{first_guest_bet,jdbcType=DECIMAL},
             #{let_ball,jdbcType=DECIMAL},
             #{host_bet,jdbcType=DECIMAL},
-            #{guest_bet,jdbcType=DECIMAL})
+            #{guest_bet,jdbcType=DECIMAL},
+            #{buy_host,jdbcType=DECIMAL},
+            #{buy_guest,jdbcType=DECIMAL})
         </insert>
 
 
@@ -384,7 +388,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+        -- AND let_ball > 0
         AND first_let_ball < let_ball
         ]]>
         <![CDATA[
@@ -411,7 +415,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+        -- AND let_ball > 0
         AND first_let_ball > let_ball
         ]]>
         <![CDATA[
@@ -437,7 +441,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+       -- AND let_ball > 0
         AND first_let_ball = let_ball
         ]]>
         <![CDATA[
@@ -467,7 +471,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+       -- AND let_ball > 0
         AND first_let_ball < let_ball
         ]]>
         <![CDATA[
@@ -494,7 +498,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+        -- AND let_ball > 0
         AND first_let_ball > let_ball
         ]]>
         <![CDATA[
@@ -520,7 +524,7 @@
         league_name_simply = #{league_name_simply,jdbcType=VARCHAR}
         <![CDATA[
         AND first_let_ball > 0
-        AND let_ball > 0
+       -- AND let_ball > 0
         AND first_let_ball = let_ball
         ]]>
         <![CDATA[
@@ -575,11 +579,24 @@
         and let_type = #{let_type,jdbcType=VARCHAR}
         and let_change_type = #{let_change_type,jdbcType=VARCHAR}
         and bet_change_type = #{bet_change_type,jdbcType=VARCHAR}
-        and bet_change_end = #{bet_change_end,jdbcType=DECIMAL}
+
+        <![CDATA[
+        and bet_change_start < #{bet_change_end,jdbcType=DECIMAL}
+        and bet_change_end >= #{bet_change_end,jdbcType=DECIMAL}
+        ]]>
     </select>
 
     <delete id="deleteOddsyzNew"  >
         delete from big_odds_yz_new
+
+        </delete>
+    <delete id="deleteOddsyz">
+        delete from  big_odds_yz where `match_id`=#{matchId}
+    </delete>
+
+
+    <delete id="deleteOddsyzNewById"  >
+        delete from big_odds_yz_new  where `match_id`=#{matchId}
 
         </delete>
 

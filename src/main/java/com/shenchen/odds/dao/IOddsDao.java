@@ -16,6 +16,8 @@ public interface IOddsDao {
 
     void insertOddsyz(BigOddsYz bigOdds);
 
+    void deleteOddsyz(String matchId);
+
     List<BigOddsYz> listYZAll();
 
     void updateYz(BigOddsYz bigOddsYz);
@@ -45,6 +47,7 @@ public interface IOddsDao {
     Integer shou_bubian_ke(YzJiSuan yzJiSuan);
 
     void deleteOddsyzNew();
+    void deleteOddsyzNewById(String matchId);
 
     void insertOddsyzModel(BigOddsYzModel bigOddsYzModel);
 
