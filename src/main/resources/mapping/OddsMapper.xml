@@ -647,4 +647,15 @@
 
     </select>
 
+    <select id="listYzNewFinished" resultType="com.shenchen.odds.model.BigOddsYz">
+        <![CDATA[
+
+        SELECT *
+        FROM big_odds_yz_new  where
+        match_time < date_sub(now(), interval 3 hour)
+        ]]>
+
+
+    </select>
+
 </mapper>

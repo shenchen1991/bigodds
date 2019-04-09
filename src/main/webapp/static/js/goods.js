@@ -121,6 +121,21 @@ var vm = new Vue({
         });
 
         },
+        // 获取已完成数据
+        findFinish() {
+            this.loadings();
+            this.createTime = this.getCreateTime();
+            this.$http.get('odds/getLastYzFinish.do').then(result => {
+                this.odds = result.body;
+            this.loading.close(); //数据更新成功就手动关闭动画
+
+        });
+
+        },
+
+
+
+
         // 获取所有数据
         getCreateTime() {
             var date = new Date();

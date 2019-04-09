@@ -19,7 +19,7 @@ public interface IOddsService {
 
     void  guilv();
 
-    List<BigOddsYzResult> getLastYz();
+    List<BigOddsYzResult> getLastYz(boolean isFinish);
 
-    List<BigOddsYzResult> lastYzModel();
+    List<BigOddsYzResult> lastYzModel(boolean isFinish);
 }

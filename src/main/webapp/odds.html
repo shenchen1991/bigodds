@@ -23,40 +23,23 @@
                         <el-button icon="el-icon-refresh"
                                    @click="findAll()">刷新
                         </el-button>
-                    </el-row>
-                </div>
-                <div>
-                    <el-row>
                         <el-button icon="el-icon-refresh"
-                                   @click="winAdd()">胜利++
+                                   @click="findFinish()">已完场
+                        </el-button>
+                        <el-button icon="el-icon-refresh"
+                                   @click="winAdd()">盈利++
                         </el-button>
                         {{winCount}}
-                    </el-row>
-
-                </div>
-                <div>
-                    <el-row>
                         <el-button icon="el-icon-refresh"
-                                   @click="winDec()">胜利--
+                                   @click="winDec()">盈利--
                         </el-button>
-                        {{winCount}}
-                    </el-row>
-
-                </div>
-                <div>
-                    <el-row>
                         <el-button icon="el-icon-refresh"
-                                   @click="lostAdd()">输++
+                                   @click="lostAdd()">亏损++
                         </el-button>
                         {{lostCount}}
-                    </el-row>
-                </div>
-                <div>
-                    <el-row>
                         <el-button icon="el-icon-refresh"
-                                   @click="lostDec()">输--
+                                   @click="lostDec()">亏损--
                         </el-button>
-                        {{lostCount}}
                     </el-row>
                 </div>
                 <!-- 列表 -->
@@ -127,7 +110,7 @@
                             align="center"
                             prop="bigOddsYz.host_bet"
                             label="即时主队"
-                            width="80"
+                            width="58"
                             style="background-color: red">
                         <template scope="scope">
                             <span style="color: red">
@@ -139,7 +122,7 @@
                             align="center"
                             prop="bigOddsYz.let_ball"
                             label="即时让球"
-                            width="80"
+                            width="58"
                             style="color: red">
                         <template scope="scope">
                             <span style="color: red">
@@ -151,7 +134,7 @@
                             align="center"
                             prop="bigOddsYz.guest_bet"
                             label="即时客队"
-                            width="80"
+                            width="58"
                             style="color: red">
                         <template scope="scope">
                             <span style="color: red">
@@ -163,7 +146,7 @@
                             align="center"
                             prop="hostModel.let_type"
                             label="让盘类型"
-                            width="80"
+                            width="58"
                             show-overflow-tooltip>
                     </el-table-column>
                     <el-table-column
@@ -187,7 +170,7 @@
                             align="center"
                             prop="hostModel.host_win_rate"
                             label="主队胜率        客队胜率"
-                            width="200"
+                            width="180"
                             show-overflow-tooltip>
                         <template scope="scope">
                             <span v-if="scope.row.hostModel.host_win_rate <= 0.5" style="color:#000000">
@@ -224,26 +207,27 @@
                             align="center"
                             prop="hostModel.host_win_rate"
                             label="购买结果"
-                            width="50"
+                            width="80"
                             show-overflow-tooltip>
                         <template scope="scope">
                             <span v-if="scope.row.bigOddsYz.buy_host > 1
                                      && scope.row.hostModel.host_win_rate > 0.5
                                      && scope.row.guestModel.host_win_rate > 0.5"
                                     style="color:#000000">赢</span>
-                            <span v-if="scope.row.bigOddsYz.buy_host > 1
+                            <span v-else-if="scope.row.bigOddsYz.buy_host > 1
                                      && scope.row.hostModel.guest_win_rate > 0.5
                                      && scope.row.guestModel.guest_win_rate > 0.5"
                                   style="color:#000000">输</span>
 
-                            <span v-if="scope.row.bigOddsYz.buy_guest > 1
+                            <span v-else-if="scope.row.bigOddsYz.buy_guest > 1
+                                     && scope.row.hostModel.guest_win_rate > 0.5
+                                     && scope.row.guestModel.guest_win_rate > 0.5"
+                                  style="color:#000000">赢</span>
+                            <span v-else-if="scope.row.bigOddsYz.buy_guest > 1
                                      && scope.row.hostModel.host_win_rate > 0.5
                                      && scope.row.guestModel.host_win_rate > 0.5"
-                                  style="color:#000000">赢</span>
-                            <span v-if="scope.row.bigOddsYz.buy_guest > 1
-                                     && scope.row.hostModel.guest_win_rate < 0.5
-                                     && scope.row.guestModel.guest_win_rate <= 0.5"
                                   style="color:#000000">输</span>
+                            <span v-else style="color:#000000">未购买</span>
                         </template>
                     </el-table-column>
                     <!--<el-table-column-->

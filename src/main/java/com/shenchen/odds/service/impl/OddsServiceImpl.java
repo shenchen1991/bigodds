@@ -1244,7 +1244,7 @@ public class OddsServiceImpl implements IOddsService {
 
 
     @Override
-    public List<BigOddsYzResult> getLastYz() {
+    public List<BigOddsYzResult> getLastYz(boolean isFinish) {
 //        singleThreadExecutor.execute(new Runnable() {
 ////            public void run() {
                 try {
@@ -1347,7 +1347,7 @@ public class OddsServiceImpl implements IOddsService {
                 }
 //            }
 //        });
-        return this.lastYzModel();
+        return this.lastYzModel(isFinish);
 
 
     }
@@ -1355,9 +1355,9 @@ public class OddsServiceImpl implements IOddsService {
 
 
     @Override
-    public List<BigOddsYzResult> lastYzModel() {
+    public List<BigOddsYzResult> lastYzModel(boolean isFinish) {
 
-        List<BigOddsYzResult> results = new ArrayList<BigOddsYzResult>();
+        List<BigOddsYzResult> results = new ArrayList<>();
         String[] strings = {
                 "欧冠","欧罗巴杯",
                 "英超","英冠","英甲","英乙",
@@ -1380,7 +1380,12 @@ public class OddsServiceImpl implements IOddsService {
                 "俄超",
                 "法国杯"
         };
-        List<BigOddsYz> bigOddsYzList = oddsDao.listYzNewAll();
+        List<BigOddsYz> bigOddsYzList = new ArrayList<>();
+        if(isFinish){
+            bigOddsYzList = oddsDao.listYzNewFinished();
+        }else {
+            bigOddsYzList = oddsDao.listYzNewAll();
+        }
         for(BigOddsYz bigOddsYz : bigOddsYzList){
             if(!Arrays.asList(strings).contains(bigOddsYz.getLeague_name_simply())){
                 continue;

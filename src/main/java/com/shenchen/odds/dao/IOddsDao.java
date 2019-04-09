@@ -57,4 +57,6 @@ public interface IOddsDao {
 
 
     List<BigOddsYz> listYzNewAll();
+
+    List<BigOddsYz> listYzNewFinished();
 }

@@ -59,7 +59,13 @@ public class OddsController {
     @RequestMapping(value="/getLastYz.do",method=RequestMethod.GET)
     @ResponseBody
     public List<BigOddsYzResult> getLastYz(){
-        return oddsService.getLastYz();
+        return oddsService.getLastYz(false);
+    }
+
+    @RequestMapping(value="/getLastYzFinish.do",method=RequestMethod.GET)
+    @ResponseBody
+    public List<BigOddsYzResult> getLastYzFinish(){
+        return oddsService.lastYzModel(true);
     }
 
 //    @RequestMapping(value="/lastYzModel",method=RequestMethod.GET)
